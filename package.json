@@ -1,9 +1,14 @@
 {
   "name": "web-privacy-reddit",
-  "description": "Clean your reddit comment-history",
-  "author": "Jostein Kjønigsen <jostein@kjonigsen.net",
-  "dependencies": {
-    "raw.js": "0.2.0"
+  "version": "0.0.1",
+  "description": "clean up your comment-history",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "engine": "node 0.4.1"
+  "author": "Jostein Kjønigsen <jostein@kjonigsen.net>",
+    "license": "MIT",
+    "dependencies": {
+        "raw.js": "0.2.0"
+    }
 }
