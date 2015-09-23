@@ -1,0 +1,9 @@
+{
+  "name": "web-privacy-reddit",
+  "description": "Clean your reddit comment-history",
+  "author": "Jostein Kjønigsen <jostein@kjonigsen.net",
+  "dependencies": {
+    "raw.js": "0.2.0"
+  },
+  "engine": "node 0.4.1"
+}
