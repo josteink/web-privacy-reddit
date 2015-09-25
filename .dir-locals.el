@@ -1,0 +1,3 @@
+(
+ (nil . ((compile-command . "grunt")))
+
