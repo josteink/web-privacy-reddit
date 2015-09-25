@@ -7,8 +7,13 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jostein Kjønigsen <jostein@kjonigsen.net>",
-    "license": "MIT",
-    "dependencies": {
-        "raw.js": "0.2.0"
-    }
+  "license": "MIT",
+  "dependencies": {
+    "raw.js": "0.2.0"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-cli": "^0.1.13",
+    "grunt-jslint": "^1.1.14"
+  }
 }
