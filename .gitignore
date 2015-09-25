@@ -65,3 +65,5 @@ tramp
 # cask packages
 .cask/
 
+# compiler-output
+out/
