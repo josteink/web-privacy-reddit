@@ -98,14 +98,24 @@ var page_auth = function (req, res) {
 };
 
 var page_posts = function (req, res) {
-    var posts = reddit.userComments({
-        limit: 25,
-        count: 0
-    }, function (err, apiRes) {
+    reddit.me(function (err, meRes) {
         if (err) {
-            page_error(req, res, 501, err);
+            page_error(req, res, err, "Error getting user-identity");
         } else {
-            page_content(req, res, apiRes);
+            var name = meRes.name;
+
+            reddit.comments({
+                user: name,
+                limit: 25,
+                count: 0
+            }, function (err, apiRes) {
+                if (err) {
+                    page_error(req, res, 501, err);
+                } else {
+                    page_content(req, res, apiRes);
+                }
+            });
+
         }
     });
 };
@@ -130,7 +140,7 @@ http.createServer(function (req, res) {
         break;
 
     case "/posts":
-        page_posts(res, req);
+        page_posts(req, res);
         break;
 
     default:
