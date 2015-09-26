@@ -1,3 +1,3 @@
 (
- (nil . ((compile-command . "grunt")))
+ (nil . ((compile-command . "grunt --no-colors")))
 
