@@ -36,7 +36,7 @@ This project depends on
 
 * NodeJS
 * npm
-* raw.js
+* [raw.js](https://www.reddit.com/r/rawjs/wiki/) npm-package
 
 It's currently in development, and not yet functional. It's being
 developed and tested on Ubuntu, but should work anywhere Node does.
@@ -77,7 +77,7 @@ node index.js
 ````
 
 After that, the application should be available at
-http://localhost:8000/.
+[http://localhost:8000/](http://localhost:8000/).
 
 Go there with a browser and follow the instructions.
 
