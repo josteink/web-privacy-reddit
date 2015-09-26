@@ -83,7 +83,9 @@ var page_auth = function (req, res) {
     console.log("Authentication-code: " + code);
 
     reddit.auth({"code": code }, function (err, response) {
-        if (err) {
+        if (err === 401) {
+            page_error(req, res, 500, "Unable to authenticate to reddit. Verify app-id and secret.");
+        } else if (err) {
             page_error(req, res, 500, err);
         } else {
             config.access_token = response.access_token;
