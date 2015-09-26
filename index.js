@@ -46,7 +46,7 @@ var page_error = function (req, res, code, text) {
 };
 
 var page_redirect = function (req, res, location) {
-    res.writeHead(301, {'Location': appUrl + location});
+    res.writeHead(302, {'Location': appUrl + location});
     res.end();
 };
 
@@ -57,7 +57,6 @@ var page_content = function (req, res, html) {
 
 var page_welcome = function (req, res) {
     page_content(req, res, '<h1>Please log in to reddit</h1><p><a href="' + loginUrl + '">Login</a>');
-
 };
 
 var page_default = function (req, res) {
@@ -80,7 +79,6 @@ var page_default = function (req, res) {
 
 var page_auth = function (req, res) {
     var code = get_param(req, "code");
-    console.log("Authentication-code: " + code);
 
     reddit.auth({"code": code }, function (err, response) {
         if (err === 401) {
@@ -100,7 +98,7 @@ var page_auth = function (req, res) {
 var page_posts = function (req, res) {
     reddit.me(function (err, meRes) {
         if (err) {
-            page_error(req, res, err, "Error getting user-identity");
+            page_error(req, res, 501, "Error getting user-identity: " + err);
         } else {
             var name = meRes.name;
 
@@ -110,7 +108,7 @@ var page_posts = function (req, res) {
                 count: 0
             }, function (err, apiRes) {
                 if (err) {
-                    page_error(req, res, 501, err);
+                    page_error(req, res, 501, "Error getting comment history: " + err);
                 } else {
                     page_content(req, res, apiRes);
                 }
