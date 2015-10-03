@@ -1,10 +1,14 @@
 'use strict';
 
-var sys = require('sys'),
-    fs = require('fs'),
-    http = require('http'),
-    url = require('url'),
-    Rawjs = require('raw.js');
+var fs = require('fs');
+var express = require('express');
+var cookieParser = require('cookie-parser');
+var app = express();
+app.use(cookieParser());
+var Snoocore = require('snoocore');
+
+var uniqId = 0; // unique id for our user
+var accounts = {}; // Snoocore instances. Each instance is a different account
 
 // configuration
 
@@ -22,131 +26,101 @@ var config = load_config();
 
 // prepare objects
 
-var reddit = new Rawjs("web-privacy reddit-module");
-
 var appUrl = "http://localhost:" + config.port;
-var callbackUrl = appUrl + "/auth";
-reddit.setupOAuth2(config.appId, config.appSecret, callbackUrl);
-var loginUrl = reddit.authUrl("some_random_state", ['identity', 'edit', 'history'], true);
+var authPage = "/auth";
+var callbackUrl = appUrl + authPage;
 
-// functions
+function getInstance(accountId) {
 
-var get_param = function (req, name) {
-    var url_parts = url.parse(req.url);
-    var kvp = url_parts.query.split("&").filter(function (i) { return i.indexOf(name) === 0; })[0];
-    var value = kvp.substring("code".length + 1);
-    return value;
-};
+    // Check if we already have an instance with this id. If
+    // so, use this instance
+    if (accounts[accountId]) {
+        return accounts[accountId];
+    }
+
+    // Else, return a new instance
+    return new Snoocore({
+        userAgent: 'reddit comment cleaner',
+        oauth: {
+            type: 'explicit',
+            duration: 'permanent',
+            key: config.appId,
+            secret: config.appSecret,
+            redirectUri: callbackUrl,
+            scope: [ 'identity', 'edit', 'history' ]
+        }
+    });
+}
+
 
 // pages
 
-var page_error = function (req, res, code, text) {
-    res.writeHead(code, {'Content-Type': 'text/html'});
-    res.end('<h1>' + code + ' ' + text + '</h1>');
-};
+app.get('/', function (req, res) {
+    var accountId = req.cookies ? req.cookies.account_id : void 0;
 
-var page_redirect = function (req, res, location) {
-    res.writeHead(302, {'Location': appUrl + location});
-    res.end();
-};
-
-var page_content = function (req, res, html) {
-    res.writeHead(200, {'Content-Type': 'text/html'});
-    res.end(html);
-};
-
-var page_welcome = function (req, res) {
-    page_content(req, res, '<h1>Please log in to reddit</h1><p><a href="' + loginUrl + '">Login</a>');
-};
-
-var page_default = function (req, res) {
-    // configured?
-    if (config.refresh_token) {
-        reddit.refreshToken = config.refresh_token;
-
-        // authenticated?
-        reddit.auth(function (err, authRes) {
-            if (err) {
-                page_welcome(req, res);
-            } else {
-                page_redirect(req, res, "/posts");
-            }
-        });
-    } else {
-        page_welcome(req, res);
+    // We have an account, redirect to the authenticated route
+    if (accountId && typeof accounts[accountId] === 'function') {
+        return res.redirect('/posts');
     }
-};
 
-var page_auth = function (req, res) {
-    var code = get_param(req, "code");
+    var reddit = getInstance();
+    return res.send('<h1>Please log in to reddit</h1><p><a href="' + reddit.getAuthUrl() + '">Login</a>');
+});
 
-    reddit.auth({"code": code }, function (err, response) {
-        if (err === 401) {
-            page_error(req, res, 500, "Unable to authenticate to reddit. Verify app-id and secret.");
-        } else if (err) {
-            page_error(req, res, 500, err);
-        } else {
-            config.access_token = response.access_token;
-            config.refresh_token = response.refresh_token;
-            save_config(config);
+// does not account for hitting "deny" / etc. Assumes that
+// the user has pressed "allow"
+app.get(authPage, function(req, res) {
+    var accountId = ++uniqId; // an account id for this instance
+    var instance = getInstance(); // an account instance
 
-            page_redirect(req, res, "/posts");
-        }
+    console.log(req.query.code);
+
+    // In a real app, you would save the refresh token in
+    // a database / etc for use later so the user does not have
+    // to allow your app every time...
+    return instance.auth(req.query.code).then(function(refreshToken) {
+        // Store the account (Snoocore instance) into the accounts hash
+        accounts[accountId] = instance;
+
+        config.refresh_token = refreshToken;
+        save_config(config);
+
+        // Set the account_id cookie in the users browser so that
+        // later calls we can refer to the stored instance in the
+        // account hash
+
+        console.log(accounts);
+        res.cookie('account_id', String(accountId), { maxAge: 900000, httpOnly: true });
+
+        // redirect to the authenticated route
+        return res.redirect('/posts');
     });
-};
+});
 
-var page_posts = function (req, res) {
-    reddit.me(function (err, meRes) {
-        if (err) {
-            page_error(req, res, 501, "Error getting user-identity: " + err);
-        } else {
-            var name = meRes.name;
+app.get('/posts', function(req, res) {
 
-            reddit.comments({
-                user: name,
-                limit: 25,
-                count: 0
-            }, function (err, apiRes) {
-                if (err) {
-                    page_error(req, res, 501, "Error getting comment history: " + err);
-                } else {
-                    page_content(req, res, apiRes);
-                }
-            });
+    var accountId = req.cookies ? req.cookies.account_id : void 0;
 
-        }
+    // If the user has not authenticated bump them back to the main route
+    if (!accountId || typeof accounts[accountId] === 'undefined') {
+        return res.redirect('/');
+    }
+
+    // Print out stats about the user, that's it.
+    return accounts[accountId]('/api/v1/me').get().then(function(result) {
+        var me = JSON.stringify(result, null, 4);
+
+        return accounts[accountId]('/user/' + result.name + '/comments/').get().then(function (result2) {
+            var comments = JSON.stringify(result2, null, 4);
+            return res.send("ME: " + me + " COMMENTS:" + comments);
+        });
+
+        // TODO: display POSTS!
     });
-};
-
-var page_404 = function (req, res) {
-    page_error(res, req, 404, "File not found");
-};
+});
 
 // start server
 
-http.createServer(function (req, res) {
-    var url_parts = url.parse(req.url);
-    sys.puts(url_parts.pathname);
-
-    switch (url_parts.pathname) {
-    case "/":
-        page_default(req, res);
-        break;
-
-    case "/auth":
-        page_auth(req, res);
-        break;
-
-    case "/posts":
-        page_posts(req, res);
-        break;
-
-    default:
-        page_404(res, req);
-        break;
-    }
-}).listen(config.port);
-
-
-
-console.log("Running local server on: " + appUrl);
+var server = app.listen(config.port, function () {
+  console.log('Example app listening at ' + appUrl);
+});
