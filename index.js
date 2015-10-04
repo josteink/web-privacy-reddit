@@ -38,6 +38,7 @@ var reddit = new Snoocore({
         scope: [ 'identity', 'edit', 'history' ]
     }
 });
+var pollInterval = 60000;
 
 // configuration pages, for first time running of application.
 
@@ -92,22 +93,58 @@ function getLastCommentToKeep(user, numToKeep) {
     });
 }
 
+var scheduleLoop = null;
+var deleteCommentsFromIds = null;
+
+deleteCommentsFromIds = function(ids) {
+    // all done
+    if (ids.length == 0) {
+        scheduleLoop();
+    } else {
+        var id = ids[0];
+        var rest = ids.slice(1);
+
+        reddit('/api/del').post({
+            id: id
+        }).then(function () {
+            setTimeout(function() {
+                deleteCommentsFromIds(rest);
+            }, 500);
+        });
+    }
+}
+
 function deleteComments(lastKeepId, user) {
     console.log('Fetching comment.');
     return reddit('/user/' + user + '/comments/').listing({
         after: lastKeepId,
-        limit: 1
+        limit: 10
     }).then(function (slice) {
         if (slice.empty) {
             console.log('No comments to delete.');
+            scheduleLoop();
             return null;
         }
         else {
-            // actually delete comments
-            // TODO!
-            // reddit('/api/del').post({
-            // });
+            var ids = slice.allChildren.map(function (item) {
+                return item.data.id;
+            });
+            return deleteCommentsFromIds(ids);
         }
+    });
+}
+
+var user = null;
+
+scheduleLoop = function () {
+    setTimeout(function() {
+        runLoop();
+    }, pollInterval);
+}
+
+function runLoop() {
+    return getLastCommentToKeep(user, 100).then(function (lastId) {
+        return deleteComments(user, lastId);
     });
 }
 
@@ -116,15 +153,9 @@ function runApp() {
     var user = null;
     getUserName().then(function (me) {
         user = me;
-        return getLastCommentToKeep(me, 10);
-    }).then(function (lastId) {
-        // while (true) {
-        //     var res = deleteComments(lastId, user);
-        //     //res.wait(); ? how?
-        // }
-        console.log("TODO: actually delete comments.");
+        return runLoop();
     });
-};
+}
 
 // start configuration app-server or start app.
 
