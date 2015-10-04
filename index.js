@@ -118,10 +118,10 @@ function runApp() {
         user = me;
         return getLastCommentToKeep(me, 10);
     }).then(function (lastId) {
-        while (true) {
-            var res = deleteComments(lastId, user);
-            //res.wait(); ? how?
-        }
+        // while (true) {
+        //     var res = deleteComments(lastId, user);
+        //     //res.wait(); ? how?
+        // }
         console.log("TODO: actually delete comments.");
     });
 };
