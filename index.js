@@ -84,32 +84,49 @@ function getLastCommentToKeep(user, numToKeep) {
             console.log("No comments returned when trying to get last to keep!");
             return null;
         } else {
-            var lastComment = slice.allChildren[slice.count - 1];
-            var lastId = lastComment.id;
+            var lastComment = slice.allChildren[slice.allChildren.length - 1];
+            var lastId = lastComment.data.id;
             console.log("Last comment to keep: " + lastId);
             return lastId;
         }
     });
 }
 
-function deleteComments(slice, callback, error) {
-    // TODO:
-    // 1. delete single comment
-    // 2. recurse into self with remaining if any
-    // 3. callback when done, or call error.
+function deleteComments(lastKeepId, user) {
+    console.log('Fetching comment.');
+    return reddit('/user/' + user + '/comments/').listing({
+        after: lastKeepId,
+        limit: 1
+    }).then(function (slice) {
+        if (slice.empty) {
+            console.log('No comments to delete.');
+            return null;
+        }
+        else {
+            // actually delete comments
+            // TODO!
+            // reddit('/api/del').post({
+            // });
+        }
+    });
 }
-
 
 function runApp() {
     // Print out stats about the user, that's it.
+    var user = null;
     getUserName().then(function (me) {
-        return getLastCommentToKeep(me, 100);
+        user = me;
+        return getLastCommentToKeep(me, 10);
     }).then(function (lastId) {
+        while (true) {
+            var res = deleteComments(lastId, user);
+            //res.wait(); ? how?
+        }
         console.log("TODO: actually delete comments.");
     });
 };
 
-// start configuration app-server
+// start configuration app-server or start app.
 
 if (config.refresh_token == 'undefined') {
     var server = app.listen(config.port, function () {
