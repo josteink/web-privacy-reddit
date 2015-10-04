@@ -81,6 +81,7 @@ function getLastCommentToKeep(user, numToKeep) {
     return reddit('/user/' + user + '/comments/').listing({
         limit: numToKeep
     }).then(function (slice) {
+        console.log(slice);
         if (slice.empty) {
             console.log("No comments returned when trying to get last to keep!");
             return null;
@@ -114,7 +115,7 @@ deleteCommentsFromIds = function(ids) {
     }
 }
 
-function deleteComments(lastKeepId, user) {
+function deleteComments(user, lastKeepId) {
     console.log('Fetching comment.');
     return reddit('/user/' + user + '/comments/').listing({
         after: lastKeepId,
