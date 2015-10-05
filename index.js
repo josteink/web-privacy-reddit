@@ -73,6 +73,7 @@ function getUserName() {
     return reddit('/api/v1/me').get().then(function(result) {
         var username = result.name;
         console.log("Logged in as: " + username);
+        console.log("Monitoring reddit for items to clean.");
         return username;
     });
 };
@@ -146,7 +147,7 @@ scheduleLoop = function () {
     setTimeout(function() {
         runLoop();
     }, pollInterval);
-}
+};
 
 function runLoop() {
     return getLastCommentToKeep(user, 100).then(function (lastId) {
