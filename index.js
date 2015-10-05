@@ -160,9 +160,9 @@ function runApp() {
 
 // start configuration app-server or start app.
 
-if (config.refresh_token == 'undefined') {
+if (config.refresh_token === undefined) {
     var server = app.listen(config.port, function () {
-        console.log('Example app listening at ' + appUrl);
+        console.log('Please go to the following URL to configure the app: ' + appUrl);
     });
 } else {
     reddit.refresh(config.refresh_token).then(function() {
