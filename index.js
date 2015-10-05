@@ -105,7 +105,7 @@ function deleteCommentsFromEntity(comments) {
         var rest = comments.slice(1);
 
         var id = first.kind + "_" + first.data.id;
-        var date = new Date(first.data.created);
+        var date = new Date(first.data.created * 1000);
         console.log("Deleting comment " + id + " from " + date.toString()  + ".");
         var commentBody = first.data.body;
         if (commentBody !== undefined)
