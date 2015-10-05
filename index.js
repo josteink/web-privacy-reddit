@@ -98,7 +98,7 @@ var scheduleLoop = null;
 
 function deleteCommentsFromEntity(comments) {
     // all done
-    if (comments.length == 0) {
+    if (comments.length === 0) {
         scheduleLoop();
     } else {
         var first = comments[0];
@@ -166,7 +166,7 @@ function runApp() {
 // start configuration app-server or start app.
 
 if (config.refresh_token === undefined) {
-    var server = app.listen(config.port, function () {
+    app.listen(config.port, function () {
         console.log('Please go to the following URL to configure the app: ' + appUrl);
     });
 } else {
