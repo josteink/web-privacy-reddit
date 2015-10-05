@@ -81,7 +81,6 @@ function getLastCommentToKeep(user, numToKeep) {
     return reddit('/user/' + user + '/comments/').listing({
         limit: numToKeep
     }).then(function (slice) {
-        console.log(slice);
         if (slice.empty) {
             console.log("No comments returned when trying to get last to keep!");
             return null;
@@ -95,28 +94,31 @@ function getLastCommentToKeep(user, numToKeep) {
 }
 
 var scheduleLoop = null;
-var deleteCommentsFromIds = null;
 
-deleteCommentsFromIds = function(ids) {
+function deleteCommentsFromEntity(comments) {
     // all done
-    if (ids.length == 0) {
+    if (comments.length == 0) {
         scheduleLoop();
     } else {
-        var id = ids[0];
-        var rest = ids.slice(1);
+        var first = comments[0];
+        var rest = comments.slice(1);
 
+        var id = first.data.id;
+        console.log("Deleting comment " + id + ".");
+        console.log(first.data.body);
+        
         reddit('/api/del').post({
             id: id
         }).then(function () {
             setTimeout(function() {
-                deleteCommentsFromIds(rest);
+                deleteCommentsFromEntity(rest);
             }, 500);
         });
     }
 }
 
 function deleteComments(user, lastKeepId) {
-    console.log('Fetching comment.');
+    console.log('Fetching comments.');
     return reddit('/user/' + user + '/comments/').listing({
         after: lastKeepId,
         limit: 10
@@ -127,10 +129,9 @@ function deleteComments(user, lastKeepId) {
             return null;
         }
         else {
-            var ids = slice.allChildren.map(function (item) {
-                return item.data.id;
-            });
-            return deleteCommentsFromIds(ids);
+            console.log(slice);
+            console.log("Processing " + slice.allChildren.length + " comments.");
+            //return deleteCommentsFromEntity(slice.allChildren);
         }
     });
 }
@@ -151,7 +152,6 @@ function runLoop() {
 
 function runApp() {
     // Print out stats about the user, that's it.
-    var user = null;
     getUserName().then(function (me) {
         user = me;
         return runLoop();
