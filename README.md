@@ -36,10 +36,11 @@ This project depends on
 
 * NodeJS
 * npm
-* [raw.js](https://www.reddit.com/r/rawjs/wiki/) npm-package
+* [snoocore](https://github.com/trevorsenior/snoocore) npm-package
 
-It's currently in development, and not yet functional. It's being
-developed and tested on Ubuntu, but should work anywhere Node does.
+It's currently in development, and covers just the most basic
+functionality. It's being developed and tested on Ubuntu, but should
+work anywhere Node does, including Windows.
 
 Install them using your favourite package-manager:
 
@@ -76,10 +77,16 @@ nano config.json
 node index.js
 ````
 
-After that, the application should be available at
+After that, the application should be running in a unconfigured
+state. To complete the configuration-process, the application will
+tell you to visit a web-page:
 [http://localhost:8000/](http://localhost:8000/).
 
 Go there with a browser and follow the instructions.
+
+Once configured, the application will start. Next time you start it,
+the authentication-data will be restored from disk and the
+configuration interface will not be started nor needed.
 
 **Note:** Port can be changed in `config.json`, if already occupied by
 other software. Make sure to update your application-registration accordingly.
