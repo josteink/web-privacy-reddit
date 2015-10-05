@@ -87,7 +87,7 @@ function getLastCommentToKeep(user, numToKeep) {
         } else {
             var lastComment = slice.allChildren[slice.allChildren.length - 1];
             var lastId = lastComment.kind + "_" + lastComment.data.id;
-            console.log("Last comment to keep: " + lastId);
+            // console.log("Last comment to keep: " + lastId);
             return lastId;
         }
     });
@@ -106,7 +106,11 @@ function deleteCommentsFromEntity(comments) {
         var id = first.kind + "_" + first.data.id;
         var date = new Date(first.data.created);
         console.log("Deleting comment " + id + " from " + date.toString()  + ".");
-        console.log(first.data.body);
+        var commentBody = first.data.body;
+        if (commentBody !== undefined)
+        {
+            console.log(commentBody);
+        }
         
         reddit('/api/del').post({
             id: id
@@ -119,13 +123,13 @@ function deleteCommentsFromEntity(comments) {
 }
 
 function deleteComments(user, lastKeepId) {
-    console.log('Fetching comments after ' + lastKeepId + '.');
-    return reddit('/user/' + user + '/comments/').listing({
+    // console.log('Fetching comments after ' + lastKeepId + '.');
+    return reddit('/user/' + user).listing({
         after: lastKeepId,
         limit: 10
     }).then(function (slice) {
         if (slice.empty) {
-            console.log('No comments to delete.');
+            //console.log('No comments to delete.');
             scheduleLoop();
             return null;
         }
