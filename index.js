@@ -69,6 +69,13 @@ app.get('/done', function(req, res) {
 
 // actual application-logic
 
+function errorHandler(err) {
+    console.log("Error sending request to reddit:");
+    console.log(err);
+    console.log("Retrying later.");
+    scheduleLoop();
+}
+
 function getUserName() {
     return reddit('/api/v1/me').get().then(function(result) {
         var username = result.name;
@@ -91,7 +98,7 @@ function getLastCommentToKeep(user, numToKeep) {
             // console.log("Last comment to keep: " + lastId);
             return lastId;
         }
-    });
+    }).catch(errorHandler);
 }
 
 var scheduleLoop = null;
@@ -119,7 +126,7 @@ function deleteCommentsFromEntity(comments) {
             setTimeout(function() {
                 deleteCommentsFromEntity(rest);
             }, 500);
-        });
+        }).catch(errorHandler);
     }
 }
 
@@ -138,7 +145,7 @@ function deleteComments(user, lastKeepId) {
             console.log("Processing " + slice.allChildren.length + " comments.");
             return deleteCommentsFromEntity(slice.allChildren);
         }
-    });
+    }).catch(errorHandler);
 }
 
 var user = null;
