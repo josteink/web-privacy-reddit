@@ -38,7 +38,7 @@ var reddit = new Snoocore({
         scope: [ 'identity', 'edit', 'history' ]
     }
 });
-var pollInterval = 60000;
+var pollInterval = 10000;
 
 // configuration pages, for first time running of application.
 
@@ -86,7 +86,7 @@ function getLastCommentToKeep(user, numToKeep) {
             return null;
         } else {
             var lastComment = slice.allChildren[slice.allChildren.length - 1];
-            var lastId = lastComment.data.id;
+            var lastId = lastComment.kind + "_" + lastComment.data.id;
             console.log("Last comment to keep: " + lastId);
             return lastId;
         }
@@ -104,7 +104,8 @@ function deleteCommentsFromEntity(comments) {
         var rest = comments.slice(1);
 
         var id = first.data.id;
-        console.log("Deleting comment " + id + ".");
+        var date = new Date(first.data.created);
+        console.log("Deleting comment " + id + " from " + date.toString()  + ".");
         console.log(first.data.body);
         
         reddit('/api/del').post({
@@ -118,7 +119,7 @@ function deleteCommentsFromEntity(comments) {
 }
 
 function deleteComments(user, lastKeepId) {
-    console.log('Fetching comments.');
+    console.log('Fetching comments after ' + lastKeepId + '.');
     return reddit('/user/' + user + '/comments/').listing({
         after: lastKeepId,
         limit: 10
@@ -129,9 +130,8 @@ function deleteComments(user, lastKeepId) {
             return null;
         }
         else {
-            console.log(slice);
             console.log("Processing " + slice.allChildren.length + " comments.");
-            //return deleteCommentsFromEntity(slice.allChildren);
+            return deleteCommentsFromEntity(slice.allChildren);
         }
     });
 }
