@@ -48,11 +48,11 @@ app.get('/', function (req, res) {
 
 // does not account for hitting "deny" / etc. Assumes that
 // the user has pressed "allow"
-app.get(authPage, function(req, res) {
+app.get(authPage, function (req, res) {
     // In a real app, you would save the refresh token in
     // a database / etc for use later so the user does not have
     // to allow your app every time...
-    return reddit.auth(req.query.code).then(function(refreshToken) {
+    return reddit.auth(req.query.code).then(function (refreshToken) {
         // Store the account (Snoocore instance) into the accounts hash
         config.refresh_token = refreshToken;
         save_config(config);
@@ -62,7 +62,7 @@ app.get(authPage, function(req, res) {
     });
 });
 
-app.get('/done', function(req, res) {
+app.get('/done', function (req, res) {
     runApp();
     res.send("Application configured and running. Restart to disable configuration interface.");
 });
@@ -77,13 +77,13 @@ function errorHandler(err) {
 }
 
 function getUserName() {
-    return reddit('/api/v1/me').get().then(function(result) {
+    return reddit('/api/v1/me').get().then(function (result) {
         var username = result.name;
         console.log("Logged in as: " + username);
         console.log("Monitoring reddit for items to clean.");
         return username;
     });
-};
+}
 
 function getLastCommentToKeep(user, numToKeep) {
     return reddit('/user/' + user + '/comments/').listing({
@@ -101,8 +101,6 @@ function getLastCommentToKeep(user, numToKeep) {
     }).catch(errorHandler);
 }
 
-var scheduleLoop = null;
-
 function deleteCommentsFromEntity(comments) {
     // all done
     if (comments.length === 0) {
@@ -115,15 +113,14 @@ function deleteCommentsFromEntity(comments) {
         var date = new Date(first.data.created * 1000);
         console.log("Deleting comment " + id + " from " + date.toString()  + ".");
         var commentBody = first.data.body;
-        if (commentBody !== undefined)
-        {
+        if (commentBody !== undefined) {
             console.log(commentBody);
         }
-        
+
         reddit('/api/del').post({
             id: id
         }).then(function () {
-            setTimeout(function() {
+            setTimeout(function () {
                 deleteCommentsFromEntity(rest);
             }, 500);
         }).catch(errorHandler);
@@ -131,17 +128,14 @@ function deleteCommentsFromEntity(comments) {
 }
 
 function deleteComments(user, lastKeepId) {
-    // console.log('Fetching comments after ' + lastKeepId + '.');
     return reddit('/user/' + user).listing({
         after: lastKeepId,
         limit: 10
     }).then(function (slice) {
         if (slice.empty) {
-            //console.log('No comments to delete.');
             scheduleLoop();
             return null;
-        }
-        else {
+        } else {
             console.log("Processing " + slice.allChildren.length + " comments.");
             return deleteCommentsFromEntity(slice.allChildren);
         }
@@ -150,11 +144,11 @@ function deleteComments(user, lastKeepId) {
 
 var user = null;
 
-scheduleLoop = function () {
-    setTimeout(function() {
+function scheduleLoop() {
+    setTimeout(function () {
         runLoop();
     }, pollInterval);
-};
+}
 
 function runLoop() {
     return getLastCommentToKeep(user, 100).then(function (lastId) {
@@ -177,7 +171,7 @@ if (config.refresh_token === undefined) {
         console.log('Please go to the following URL to configure the app: ' + appUrl);
     });
 } else {
-    reddit.refresh(config.refresh_token).then(function() {
+    reddit.refresh(config.refresh_token).then(function () {
         runApp();
     });
 }
