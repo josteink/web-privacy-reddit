@@ -67,3 +67,5 @@ tramp
 
 # compiler-output
 out/
+
+config.json
