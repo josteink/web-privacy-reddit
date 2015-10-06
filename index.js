@@ -9,28 +9,13 @@ var Snoocore = require('snoocore');
 
 // configuration
 
-var load_config = function () {
-    try {
-      var config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
-      return config;
-    }
-    catch (error) {
-        return null;
-    }
-};
-
-var save_config = function (config) {
-    var text = JSON.stringify(config);
-    fs.writeFileSync('config.json', text, 'utf8');
-};
-
-var config = load_config() || {
+var Config = require("./config").config;
+var configProvider = new Config("config.json",{
     "appId":"your appId here",
     "appSecret": "your appSecret here",
     "port":8000
-};
-// ensure template config gets written to disk.
-save_config(config);
+});
+var config = configProvider.load();
 
 // prepare objects
 
@@ -66,7 +51,7 @@ app.get(authPage, function (req, res) {
     return reddit.auth(req.query.code).then(function (refreshToken) {
         // Store the account (Snoocore instance) into the accounts hash
         config.refresh_token = refreshToken;
-        save_config(config);
+        configProvider.save(config);
 
         // redirect to the authenticated route
         return res.redirect('/done');
