@@ -148,7 +148,13 @@ function scheduleLoop() {
 
 function runLoop() {
     return getLastCommentToKeep(user, 100).then(function (lastId) {
-        return deleteComments(user, lastId);
+        if (! lastId) {
+            // no id, means deleting NEWEST comments. this is bad.
+            // bail out!
+            scheduleLoop();
+        } else {
+            return deleteComments(user, lastId);
+        }
     });
 }
 
