@@ -89,7 +89,9 @@ function getLastCommentToKeep(user, numToKeep) {
             console.log("No comments returned when trying to get last to keep!");
             return null;
         } else {
-            var lastComment = slice.allChildren[slice.allChildren.length - 1];
+            var numItems = slice.allChildren.length;
+            // console.log("Number of comments/posts found: ", numItems);
+            var lastComment = slice.allChildren[numItems - 1];
             var lastId = lastComment.kind + "_" + lastComment.data.id;
             // console.log("Last comment to keep: " + lastId);
             return lastId;
@@ -148,7 +150,7 @@ function scheduleLoop() {
 
 function runLoop() {
     return getLastCommentToKeep(user, 100).then(function (lastId) {
-        if (! lastId) {
+        if (lastId === null || lastId === undefined) {
             // no id, means deleting NEWEST comments. this is bad.
             // bail out!
             scheduleLoop();
