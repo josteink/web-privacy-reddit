@@ -19,16 +19,11 @@ account's history which probably no longer holds any value.
 
 This is a simple module/experiment written in NodeJS to see how that
 works out. Depending on how it turns out it may become a part of a bigger suite
-of web-privacy related tools (Facebook, Disqus, etc)
+of web-privacy related tools (Facebook, [Disqus](https://github.com/josteink/web-privacy-disqus), etc)
 
 ## Features
 
 * Automatically delete old-posts
-
-### Planned features
-
-* Gui configuration (by count, by age, by saved-status, etc)
-* Save posts before deleting
 
 ## Dependencies
 
@@ -39,8 +34,8 @@ This project depends on
 * [snoocore](https://github.com/trevorsenior/snoocore) npm-package
 
 It's currently in development, and covers just the most basic
-functionality. It's being developed and tested on Ubuntu, but should
-work anywhere Node does, including Windows.
+functionality. It's being developed and tested on Ubuntu and Fedora,
+but should work anywhere Node does, including Windows.
 
 Install them using your favourite package-manager:
 
@@ -49,8 +44,6 @@ sudo apt-get install nodejs npm
 ````
 
 ## Using
-
-Ambition is to be fully self explenatory, maybe even as a SaaS.
 
 Current status is that you need to download it, configure it and
 run it yourself.
@@ -77,7 +70,7 @@ nano config.json
 node index.js
 ````
 
-After that, the application should be running in a unconfigured
+After that, the application should be running in an unconfigured
 state. To complete the configuration-process, the application will
 tell you to visit a web-page:
 [http://localhost:8000/](http://localhost:8000/).
