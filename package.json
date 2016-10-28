@@ -4,6 +4,7 @@
   "description": "clean up your comment-history",
   "main": "index.js",
   "scripts": {
+    "app": "nodejs index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jostein Kjønigsen <jostein@kjonigsen.net>",
