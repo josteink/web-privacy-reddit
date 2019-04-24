@@ -12,7 +12,7 @@
   "dependencies": {
     "cookie-parser": "^1.4.0",
     "express": "^4.12.4",
-    "snoocore": "3.2.0"
+    "snoocore": "3.3.1"
   },
   "devDependencies": {
     "grunt": "0.4.5",
